@@ -1,0 +1,10 @@
+package com.imin.service;
+
+import java.sql.SQLException;
+
+public interface ICartService {
+	
+	//查询购物车数量
+	Integer selectCartBooksCount(Integer cid)  throws SQLException;
+
+}

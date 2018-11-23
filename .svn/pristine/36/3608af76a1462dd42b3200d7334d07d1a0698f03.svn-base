@@ -1,0 +1,7 @@
+package com.imin.dao.impl;
+
+import com.imin.dao.IOrderDao;
+
+public class OrderDaoImpl implements IOrderDao{
+
+}

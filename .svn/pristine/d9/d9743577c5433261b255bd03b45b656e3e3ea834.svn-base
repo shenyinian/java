@@ -1,0 +1,12 @@
+package com.imin.dao;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import com.imin.domain.Shopping_cart;
+
+public interface ICartDao {
+
+	Integer selectCartBooksCount(Integer cid) throws SQLException;
+	List<Shopping_cart> listCartBook(Integer cid) throws SQLException;
+}

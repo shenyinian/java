@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+  <display-name>bookstore</display-name>
+   <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+  
+  <!-- 过滤器:
+  		1.购物车:/cart
+  		2.支付:/pay
+  		3.会员中心:/vip
+  		4.后台:/manage/*
+   -->
+   
+  <filter>
+  	<filter-name>CheckFilter</filter-name>
+  	<filter-class>com.imin.web.filter.CheckFilter</filter-class>
+  </filter>
+  <filter-mapping>
+  	<filter-name>CheckFilter</filter-name>
+  	<url-pattern>/cart</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+  	<filter-name>CheckFilter</filter-name>
+  	<url-pattern>/vip</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+  	<filter-name>CheckFilter</filter-name>
+  	<url-pattern>/pay</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+  	<filter-name>CheckFilter</filter-name>
+  	<url-pattern>/manage/*</url-pattern>
+  </filter-mapping>
+   
+  <servlet>
+    <servlet-name>UserServlet</servlet-name>
+    <servlet-class>com.imin.web.CustomerServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>UserServlet</servlet-name>
+    <url-pattern>/customer</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>BookServlet</servlet-name>
+    <servlet-class>com.imin.web.BookServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>BookServlet</servlet-name>
+    <url-pattern>/book</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <servlet-name>CartServlet</servlet-name>
+    <servlet-class>com.imin.web.CartServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CartServlet</servlet-name>
+    <url-pattern>/cart</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>CategoryServlet</display-name>
+    <servlet-name>CategoryServlet</servlet-name>
+    <servlet-class>com.imin.web.CategoryServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CategoryServlet</servlet-name>
+    <url-pattern>/category</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>AdminServlet</servlet-name>
+    <servlet-class>com.imin.web.AdminServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AdminServlet</servlet-name>
+    <url-pattern>/admin</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>PayServlet</servlet-name>
+    <servlet-class>com.imin.web.PayServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PayServlet</servlet-name>
+    <url-pattern>/pay</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>VipServlet</servlet-name>
+    <servlet-class>com.imin.web.VipServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>VipServlet</servlet-name>
+    <url-pattern>/vip</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <description></description>
+    <display-name>VerifyCodeServlet</display-name>
+    <servlet-name>VerifyCodeServlet</servlet-name>
+    <servlet-class>com.imin.web.VerifyCodeServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>VerifyCodeServlet</servlet-name>
+    <url-pattern>/code</url-pattern>
+  </servlet-mapping>
+</web-app>

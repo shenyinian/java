@@ -1,0 +1,111 @@
+package com.imin.utils;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
+
+import org.apache.commons.dbcp.BasicDataSource;
+
+public class DButil {
+
+	private static BasicDataSource ds;
+	private static ThreadLocal<Connection> tl = new ThreadLocal<Connection>();
+	static {
+		Properties props = new Properties();
+		// 加载类路径(对应src目录)下的db.properties文件
+		try {
+			props.load(DButil.class.getClassLoader().getResourceAsStream(
+					"db.properties"));
+			String driver = props.getProperty("jdbc.driver");
+			String url = props.getProperty("jdbc.url");
+			String username = props.getProperty("jdbc.username");
+			String password = props.getProperty("jdbc.password");
+			String maxActive = props.getProperty("jdbc.maxActive");
+			ds = new BasicDataSource();
+			// 设置驱动路径
+			ds.setDriverClassName(driver);
+			// 设置数据库路径url
+			ds.setUrl(url);
+			// 设置登录用户名
+			ds.setUsername(username);
+			// 设置登录密码
+			ds.setPassword(password);
+			// 设置最大连接数
+			ds.setMaxActive(Integer.valueOf(maxActive));
+			ds.setRemoveAbandoned(true);
+			ds.setRemoveAbandonedTimeout(180);
+			ds.setMaxWait(3000);
+			ds.setValidationQuery("SELECT 1");
+			ds.setTestOnBorrow(true);
+		} catch (Exception e) {
+			System.out.println("初始化数据库连接失败");
+			e.printStackTrace();
+		}
+	}
+
+	// 测试
+	public static void main(String[] args) {
+		Connection con = null;
+		try {
+			con = getCon();
+			System.out.println(con);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} 
+	}
+
+	// 获取数据库连接池
+	public static BasicDataSource getDataSource() {
+		return ds;
+	}
+
+	// 获取连接
+	public static Connection getCon() throws SQLException {
+		Connection con = tl.get();
+		if (con == null) {
+			con = ds.getConnection();
+			tl.set(con);
+		}
+		return tl.get();
+	}
+
+	// 开启事务 Tx:transaction 事务的特性:ACID ,原子性、一致性、持久性、隔离性
+	public static void beginTx() throws SQLException {
+		// 获取当前线程的connetiong对象
+		Connection con = getCon();
+		// 开启事务，也就是手动提交事务
+		con.setAutoCommit(false);
+	}
+
+	// 提交事务
+	public static void commitTx() throws SQLException {
+		// 获取当前线程的connetiong对象
+		Connection con = getCon();
+		// 提交事务
+		con.commit();
+		con.setAutoCommit(true);
+		// 从ThreadLocal中删除掉和当前线程捆绑的connection对象
+		tl.remove();
+	}
+
+	// 回滚事务
+	public static void rollbackTx() throws SQLException {
+		// 获取当前线程的connetiong对象
+		Connection con = getCon();
+		// 回滚事务
+		con.rollback();
+		con.setAutoCommit(true);
+		// 从ThreadLocal中删除掉和当前线程捆绑的connection对象
+		tl.remove();
+	}
+	
+	// 关闭连接
+	public static void closeCon() throws SQLException{
+		Connection con = getCon();
+		if(con != null){
+			con.close();
+			tl.remove();
+		}
+	}
+}
+

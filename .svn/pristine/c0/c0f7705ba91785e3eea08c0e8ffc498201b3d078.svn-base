@@ -1,0 +1,26 @@
+package com.imin.domain;
+
+/**
+ * class：订单详情类
+ * author：patmiu
+ * time：2018年9月29日下午5:33:50
+ */
+public class Order_details {
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+	/**
+	 * 订单编号
+	 */
+	private String oid;
+	/**
+	 * 书籍编号
+	 */
+	private String bid;
+	/**
+	 * 书籍的数量
+	 */
+	private String bcount;
+}

@@ -1,0 +1,39 @@
+package com.imin.dao.impl;
+
+import java.util.List;
+
+
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
+
+import com.imin.dao.IShipping_addressDao;
+import com.imin.domain.Customer;
+import com.imin.domain.Shipping_address;
+import com.imin.utils.DButil;
+
+public class Shipping_addressDaolmpl implements IShipping_addressDao{
+	//添加收件人到数据库
+	public void insert(Shipping_address c) throws Exception{
+	String sql ="insert into shipping_address(cid,addr_detail,postCode,name,mobile,province,city,county,defaultAddr) "
+			+ "values(?,?,?,?,?,?,?,?,?)";
+	Object[] params = {c.getCid(),c.getAddr_detail(),c.getPostCode(),c.getName(),c.getMobile(),c.getProvince(),c.getCity(),c.getCounty(),c.getDefaultAddr()};
+	QueryRunner qr = new QueryRunner(DButil.getDataSource());
+	qr.update(sql,params);
+	}
+	//显示收货地址
+	public List<Shipping_address> find(Integer cid) throws Exception{
+		String sql="SELECT * FROM shipping_address WHERE cid=?";
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		List<Shipping_address> shipping_address = qr.query( sql, new BeanListHandler<Shipping_address>(Shipping_address.class),cid);
+		return shipping_address;
+	}
+	//删除收货地址
+	public Integer delete(Integer id)throws Exception{
+		String sql="DELETE FROM shipping_address WHERE id=?";
+		
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		int update = qr.update(sql,id);
+		return update;
+	}
+}

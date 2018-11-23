@@ -1,0 +1,117 @@
+package com.imin.service.impl;
+
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.List;
+
+import com.imin.dao.IBookDao;
+import com.imin.dao.impl.BookDaoImpl;
+import com.imin.dao.impl.CommentsDaoImpl;
+import com.imin.domain.Book;
+import com.imin.domain.Comment;
+import com.imin.domain.Page;
+import com.imin.exception.UserException;
+import com.imin.service.IBookService;
+import com.imin.utils.DButil;
+import com.imin.vo.DetailPageVo;
+import com.imin.vo.IndexVo;
+
+public class BookServiceImpl implements IBookService {
+
+	// 查询首页数据
+	public IndexVo selectIndexBooks() throws Exception {
+		IBookDao userDao = new BookDaoImpl();
+		IndexVo indexVo = new IndexVo();
+		try {
+			List<Book> recommend = userDao.selectRecommend();
+			indexVo.setRecommend(recommend);
+			List<Book> hotSales = userDao.selectHotSales();
+			indexVo.setHotSales(hotSales);
+			List<Book> newest = userDao.selectNewest();
+			indexVo.setNewest(newest);
+			List<Book> discount = userDao.selectDiscount();
+			indexVo.setDiscount(discount);
+			DButil.closeCon();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new UserException("主页数据查询错误");
+		}
+		return indexVo;
+	}
+
+	public List<String> selectPromptByName(String bookName) throws Exception {
+		return new BookDaoImpl().selectPromptByName(bookName);
+	}
+	
+	/*public List<Book> listBookByName(String bookName) throws Exception{
+		return new BookDaoImpl().listBookByName(bookName);
+	}*/
+
+	public Page<Book> selectBooksByCategory(Book book, String level, Integer currentPage) throws SQLException {
+		Page<Book> page = new Page<Book>();
+		// 每页的数据
+		List<Book> rows = new BookDaoImpl().selectBooksByCategory(book, level, page.getPageSize(), currentPage);
+		page.setRows(rows);
+		// 数据的总条数
+		int count = new BookDaoImpl().selectTotalCount(book, level);
+		page.setTotal(count);
+		// 当前的页数
+		page.setCurrentPage(currentPage);
+		// 总的页数
+		page.setTotalPages(page.getTotalPages());
+		return page;
+	}
+
+	public Page<Book> selectBooksByName(Book book, Integer currentPage) throws SQLException {
+		Page<Book> page = new Page<Book>();
+		// 每页的数据
+		List<Book> rows = new BookDaoImpl().selectBooksByName(book, page.getPageSize(), currentPage);
+		page.setRows(rows);
+		// 数据的总条数
+		int count = new BookDaoImpl().selectTotalCount(book);
+		page.setTotal(count);
+		// 当前的页数
+		page.setCurrentPage(currentPage);
+		// 总的页数
+		page.setTotalPages(page.getTotalPages());
+		return page;
+	}
+	
+	public Book findBookById(String bid) throws SQLException {
+		
+		return new BookDaoImpl().findBookDetailById(bid);
+	}
+	// 根据书籍id查询
+	public DetailPageVo findBookDetailById(String bid) throws SQLException {
+		IBookDao bookDao = new BookDaoImpl();
+		DetailPageVo detailVo = new DetailPageVo();
+		// 1.查询要购买书籍的信息
+		Book book = bookDao.findBookDetailById(bid);
+		detailVo.setBook(book);
+		// 2.查询5本同grade热销书籍
+		Integer grade = book.getGrade();
+		Book book2 = new Book();
+		book2.setGrade(grade);
+		List<Book> list = bookDao.selectSameGradeById(bid);
+		// 将当前bid排除在热销排行之外
+		Iterator<Book> iterator = list.iterator();
+		while (iterator.hasNext()) {
+			Book b = iterator.next();
+			if (b.getBid().equals(book.getBid())) {
+				iterator.remove();
+			}
+		}
+		if(list.size()>5){
+			list.remove(5);
+		}
+		detailVo.setHotBooks(list);
+		// 3.3本同时购买过的书籍,根据sold字段排序
+		List<Book> sameBought = bookDao.selectSameBought(bid);
+		detailVo.setBoughtBooks(sameBought);
+		// 4.5条评论信息
+		List<Comment> comments = new CommentsDaoImpl().selectCommentsByBookId(bid);
+		detailVo.setComments(comments);
+		return detailVo;
+	}
+
+}

@@ -1,0 +1,151 @@
+<%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%
+	String basePath = request.getContextPath();
+	pageContext.setAttribute("ctx", basePath);
+%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>兑换专区</title>
+<link type="text/css" rel="stylesheet" href="css/style.css" />
+<script type="text/javascript" src="js/jquery.min.js"></script>
+
+</head>
+
+<body>
+
+    <div class="user_top">
+       <div class="user_c">
+         <div class="user_top_l">
+             <a href="" target="_blank">回到首页</a>
+             欢迎您，uesr  &nbsp;&nbsp;&nbsp;
+             <a href="" target="_blank">退出</a>
+         </div>
+         <div class="user_top_r">
+               <ul>
+                   <li><a href="" target="_blank">帮助中心</a></li>
+                   <li><a href="" target="_blank">关于我们</a></li>
+
+               </ul>
+         </div>
+       </div>
+    </div>
+    
+    <div class="user_nav">
+         <div class="user_c">
+               <div class="user_nav_l">用户中心</div>
+               <div class="user_nav_r">
+                     <input name="search2" type="text"  class="uesr_s"/>
+                     <input name="search2" type="button"  class="uesr_b"/>
+               </div>
+         </div>
+    </div>
+    
+    <div class="user_cont">
+         <!--left begin -->
+         <div class="user_cont_left">
+               <dl>
+                   <dt>我的交易</dt>
+                   <dd><a href="${ctx}/user_1.jsp">我的订单</a></dd>
+                   <dd><a href="${ctx}/user_2.jsp">我的收藏</a></dd>
+                   <dd><a href="${ctx}/user_3.jsp">我的账单</a></dd>
+                   <dd><a href="${ctx}/user_4.jsp">我的购物车</a></dd>
+                   <dd><a href="${ctx}/vip?method=listBought">已经购买的商品</a></dd>
+               </dl>
+               <dl>
+                   <dt>自助服务</dt>
+                   <dd><a href="${ctx}/user_6.jsp">申请查询退换货</a></dd>
+                   <dd><a href="${ctx}/user_7.jsp">查询退换货记录</a></dd>
+               </dl>
+               <dl>
+                   <dt>我的账户</dt>
+                   <dd><a href="${ctx}/vip?method=listMyCredit">我的积分</a></dd>
+                   <dd><a href="${ctx}/user_9.jsp">我的消息</a></dd>
+                   <dd><a href="${ctx}/address.jsp">我的收获地址</a></dd>
+                   <dd><a href="${ctx}/info.jsp">个人档案</a></dd>
+                   <dd><a href="${ctx}/updateinfo.jsp">修改个人档案</a></dd>
+               </dl>
+               <dl>
+                   <dt>社区中心</dt>
+                   <dd><a href="${ctx}/user_12.jsp">我的评论</a></dd>
+                   <dd  class="active"><a href="${ctx}/user_13.jsp">兑换专区</a></dd>
+               </dl>
+         </div>
+         <script type="text/javascript">
+$(document).ready(function(){
+		$(".user_cont_left dl dt").click(function(){
+		$(this).siblings().slideToggle("slow");
+		$(this).toggleClass("jia"); return false;
+	});
+	
+});
+</script>
+         <!--left end -->
+         <!--right begin -->
+         <div class="user_cont_right">
+           <div class="user_lmt">
+                    <div class="user_lmt1">我的评论</div>
+                   
+           </div>
+           <div class="user_coment">
+                 <div class="my_jifen"><span class="jf_fr"><a href="" target="_blank">如何获取更多积分</a></span>我的积分&nbsp; &nbsp;<b class="red">120分</b></div>
+                 <div class="my_dhzq">
+                       <div class="my_dhzq_t">兑换商品</div>
+                       <div class="my_dhzq_b">
+                            <dl>
+                                 <dt><img src="images/dh_pic.jpg" width="104" height="141" /></dt>
+                                 <dd>旧杂志超值积分换购</dd>
+                                 <dd>积分：<b class="red">300</b></dd>
+                                 <dd><a href=""><img src="images/dh_but.jpg" width="68" height="24" /></a></dd>
+                            </dl>
+                            <dl>
+                                 <dt><img src="images/dh_pic.jpg" width="104" height="141" /></dt>
+                                 <dd>旧杂志超值积分换购</dd>
+                                 <dd>积分：<b class="red">300</b></dd>
+                                 <dd><a href=""><img src="images/dh_but.jpg" width="68" height="24" /></a></dd>
+                            </dl>
+                            <dl>
+                                 <dt><img src="images/dh_pic.jpg" width="104" height="141" /></dt>
+                                 <dd>旧杂志超值积分换购</dd>
+                                 <dd>积分：<b class="red">300</b></dd>
+                                 <dd><a href=""><img src="images/dh_but.jpg" width="68" height="24" /></a></dd>
+                            </dl>
+                            <dl>
+                                 <dt><img src="images/dh_pic.jpg" width="104" height="141" /></dt>
+                                 <dd>旧杂志超值积分换购</dd>
+                                 <dd>积分：<b class="red">300</b></dd>
+                                 <dd><a href=""><img src="images/dh_but.jpg" width="68" height="24" /></a></dd>
+                            </dl>
+                            <dl>
+                                 <dt><img src="images/dh_pic.jpg" width="104" height="141" /></dt>
+                                 <dd>旧杂志超值积分换购</dd>
+                                 <dd>积分：<b class="red">300</b></dd>
+                                 <dd><a href=""><img src="images/dh_but.jpg" width="68" height="24" /></a></dd>
+                            </dl>
+                       </div>
+                 </div>
+           </div>
+         </div>
+         <!--right end -->
+    </div>
+    
+    <div class="footer_m mar38">
+           <div class="footer_nav">
+               <a href="" target="_blank">关于我们</a>|
+               <a href="" target="_blank">联系我们</a>|
+               <a href="" target="_blank">人才招聘</a>|
+               <a href="" target="_blank">广告服务</a>|
+               <a href="" target="_blank">友情链接</a>|
+               <a href="" target="_blank">销售联盟</a>|
+               <a href="" target="_blank">公司简介</a>
+           </div>
+           <div class="footer_copyright">
+                网络文化经营许可证鄂网文[2015]0278-060号  Copyright © 2015-2018  版权所有
+           </div>
+     </div>
+    
+</body>
+</html>

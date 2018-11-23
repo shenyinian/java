@@ -1,0 +1,5 @@
+package com.imin.web;
+
+public class PayServlet {
+
+}

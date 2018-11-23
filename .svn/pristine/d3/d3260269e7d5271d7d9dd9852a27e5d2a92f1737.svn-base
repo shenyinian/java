@@ -1,0 +1,7 @@
+package com.imin.service.impl;
+
+import com.imin.service.IOrderService;
+
+public class OrderServiceImpl implements IOrderService{
+
+}

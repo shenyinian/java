@@ -1,0 +1,41 @@
+package com.imin.web;
+
+import java.io.IOException;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.imin.domain.Customer;
+import com.imin.service.impl.CartServiceImpl;
+
+public class CartServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		request.setCharacterEncoding("UTF-8");
+		String method = request.getParameter("method");
+		Integer count = 0;
+		if ("cartBooksCount".equalsIgnoreCase(method)) {
+			// 得到当前客户的cid
+			Customer customer = (Customer) request.getSession().getAttribute("customer");
+			try {
+				if (customer != null) {
+					count = new CartServiceImpl().selectCartBooksCount(customer.getCid());
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			response.getWriter().print(count);
+		}
+	}
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		doGet(request, response);
+	}
+
+}

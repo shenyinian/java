@@ -1,0 +1,16 @@
+Ñ
+jdbc.driver=com.mysql.jdbc.Driver
+ùÄ
+jdbc.url=jdbc:mysql://localhost:3306/huihui
+êç
+jdbc.username=root
+Å
+jdbc.password=8782256
+
+jdbc.maxActive=30
+
+jdbc.initialSize=10
+
+jdbc.maxIdle=10
+
+jdbc.minIdle=2

@@ -1,0 +1,236 @@
+package com.imin.dao.impl;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ColumnListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
+import org.apache.commons.lang3.StringUtils;
+
+import com.imin.dao.IBookDao;
+import com.imin.domain.Book;
+import com.imin.utils.DButil;
+
+public class BookDaoImpl implements IBookDao {
+
+	// 根据书名关键字查询提示信息
+	public List<String> selectPromptByName(String bookName) throws Exception {
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		String sql = "select name from  book where name like ? order by sold desc limit 4";
+		//将书名列取出来
+		List<String> names = qr.query(sql, new ColumnListHandler<String>(), "%" + bookName + "%");
+		return names;
+	}
+
+	// 最新上架前七位
+	public List<Book> selectNewest() throws SQLException {
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		String sql = "select bid,name,price,discount,imgurl,specialty, sold,collection from  book where state=1 ORDER BY str_to_date(uploadbooktime,'%Y-%m-%d') DESC limit 0,7";
+		List<Book> newest = qr.query(sql, new BeanListHandler<Book>(Book.class));
+		return newest;
+	}
+
+	// 每个专业中销售数量前八位
+	public List<Book> selectRecommend() throws SQLException {
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		String sql = "select  bid,name,price,discount,imgurl,specialty, "
+				+ "sold,collection from book b1 where ( (select count(*) "
+				+ "from book b2 where  b2.state=1 and b2.specialty = b1.specialty "
+				+ "and b2.sold>b1.sold))<8 ORDER BY specialty, sold DESC";
+		List<Book> recommend = qr.query(sql, new BeanListHandler<Book>(Book.class));
+		return recommend;
+	}
+
+	// 热销排行前七位
+	public List<Book> selectHotSales() throws SQLException {
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		String sql = "select bid,author,name,price,discount,imgurl,specialty, sold,collection from book where state=1 order by sold desc limit 0,7";
+		List<Book> hotSales = qr.query(sql, new BeanListHandler<Book>(Book.class));
+		return hotSales;
+	}
+
+	// 今日特价的前10位
+	public List<Book> selectDiscount() throws SQLException {
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		String sql = "select bid,name,price,discount,imgurl,specialty, sold,collection from book where state=1 order by discount limit 0,10";
+		List<Book> discount = qr.query(sql, new BeanListHandler<Book>(Book.class));
+		return discount;
+	}
+
+	@Override
+	public List<Book> selectBooksByCategory(Book book, String level, Integer pageSize, Integer currentPage)
+			throws SQLException {
+		// 存放需要传的实际参数
+				List<Object> params = new ArrayList<Object>();
+				StringBuilder sb = new StringBuilder("select bid,name,price,discount,imgurl from book where 1=1 ");
+				// 1.条件查询
+				// 根据名称查询
+				String name = book.getName();
+				if (StringUtils.isNotBlank(name)) {
+					sb.append("and name like ? ");
+					params.add("%" + name + "%");
+				}
+				// 根据分类查询
+				if (StringUtils.isNotBlank(level)) {
+					if ("0".equals(level)) {
+						sb.append("and specialty = ? ");
+					} else if ("10".equals(level)) {
+						sb.append("and grade = ? ");
+					}
+					params.add(book.getGrade());
+				}
+				// 根据价格区间查询
+				Double price = book.getPrice();
+				if (price != null) {
+					if (price == 10) {
+						sb.append("and price<=30 ");
+					} else if (price == 40) {
+						sb.append("and price>30 and price <=50 ");
+					} else if (price == 60) {
+						sb.append("and price>50 and price <=100 ");
+					} else if(price == 110){
+						sb.append("and price>100 ");
+					}
+				}
+				// 根据折扣区间查询
+				Double discount = book.getDiscount();
+				if (discount != null) {
+					if (discount == 4) {
+						sb.append("and discount<=0.5 ");
+					} else if (discount == 5) {
+						sb.append("and discount>0.5 and discount<=0.6 ");
+					} else if (discount == 7) {
+						sb.append("and discount>0.6 and discount<=0.8 ");
+					} else if(discount == 9){
+						sb.append("and discount>0.8 ");
+					}
+				}
+				// 2.排序
+				Integer sold = book.getSold();
+				String pubdate = book.getPubdate();
+				if (sold != null) {
+					sb.append("order by sold desc ");
+				} else if (price != null && price == 1) {
+					sb.append("order by price desc ");
+				} else if (StringUtils.isNotBlank(pubdate)) {
+					sb.append("order by STR_TO_DATE(pubdate,'%Y-%m-%d %H:%i:%s') desc ");
+				} else {
+					
+				}
+				// 3.分页
+				sb.append("limit ?,?");
+				// 跳过前面多少行数据
+				params.add((currentPage - 1) * pageSize);
+				// 一页查询多少条数据
+				params.add(pageSize);
+				// 查询
+				String sql = sb.toString();
+				QueryRunner qr = new QueryRunner(DButil.getDataSource());
+				List<Book> rows = qr.query(sql, new BeanListHandler<Book>(Book.class), params.toArray());
+				return rows;
+	}
+
+	// 查询总条数
+	public int selectTotalCount(Book book, String level) throws SQLException {
+		// 存放需要传的实际参数
+				List<Object> params = new ArrayList<Object>();
+				StringBuilder sb = new StringBuilder("select count(*) from book where 1=1 ");
+				// 1.条件查询
+				// 根据名称查询
+				String name = book.getName();
+				if (StringUtils.isNotBlank(name)) {
+					sb.append("and name like ? ");
+					params.add("%" + name + "%");
+				}
+				// 根据分类查询
+				if (StringUtils.isNotBlank(level)) {
+					if ("0".equals(level)) {
+						sb.append("and specialty = ? ");
+					} else if ("10".equals(level)) {
+						sb.append("and grade = ? ");
+					}
+					params.add(book.getGrade());
+				}
+				// 根据价格区间查询
+				Double price = book.getPrice();
+				if (price != null) {
+					if (price == 10) {
+						sb.append("and price<=30 ");
+					} else if (price == 40) {
+						sb.append("and price>30 and price <=50 ");
+					} else if (price == 60) {
+						sb.append("and price>50 and price <=100 ");
+					} else if(price == 110){
+						sb.append("and price>100 ");
+					}
+				}
+				// 根据折扣区间查询
+				Double discount = book.getDiscount();
+				if (discount != null) {
+					if (discount == 4) {
+						sb.append("and discount<=0.5 ");
+					} else if (discount == 5) {
+						sb.append("and discount>0.5 and discount<=0.6 ");
+					} else if (discount == 7) {
+						sb.append("and discount>0.6 and discount<=0.8 ");
+					} else if(discount == 9){
+						sb.append("and discount>0.8 ");
+					}
+				}
+				// 查询总条数
+				String sql = sb.toString();
+				QueryRunner qr = new QueryRunner(DButil.getDataSource());
+				Number count = qr.query(sql, new ScalarHandler<Long>(),params.toArray());
+				return count.intValue();
+	}
+	
+	/**
+	 * 查询bid的书籍信息
+	 *  @param bid
+	 *  用户购买书的bid
+	 */
+	public Book findBookDetailById(String bid) throws SQLException {
+		String sql = "select bid,name,price,discount,imgurl,stock,detail from book where bid=?";
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		Book book = qr.query(sql, new BeanHandler<Book>(Book.class), bid);
+		return book;
+	}
+
+	/**
+	 * 查询5本同grade热销书籍
+	 *  @param bid
+	 *            用户购买书的bid
+	 */
+	public List<Book> selectSameGradeById(String bid) throws SQLException {
+		String sql = "select bid,name,price,discount,imgurl from book where grade = (select grade from book where bid = ?) limit 5";
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		List<Book> list = qr.query(sql, new BeanListHandler<Book>(Book.class), bid);
+		return list;
+	}
+	
+	
+
+	/**
+	 * 购买bid的客户购买过的其它3本书籍，按销量排序
+	 * 
+	 * @param bid
+	 *            用户购买书的bid
+	 * @throws Exception
+	 */
+	public List<Book> selectSameBought(String bid) throws SQLException {
+		String sql = "select c.cid,b.* from orders o join order_details od on o.oid = od.oid "
+				+ "join customer c on c.cid = o.cid join book b on b.bid=od.bid "
+				+ "where c.cid IN (select c.cid from orders o join order_details od"
+				+ " on o.oid = od.oid join customer c on c.cid = o.cid where od.bid ="
+				+ " ?) and b.bid != (?) order by sold limit 3";
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		List<Book> list = qr.query(sql, new BeanListHandler<Book>(Book.class), bid,bid);
+		return list;
+	}
+
+
+}

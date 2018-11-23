@@ -1,0 +1,14 @@
+package com.imin.service.impl;
+
+import java.sql.SQLException;
+
+import com.imin.dao.impl.CartDaoImpl;
+import com.imin.service.ICartService;
+
+public class CartServiceImpl implements ICartService {
+
+	public Integer selectCartBooksCount(Integer cid) throws SQLException {
+		return new CartDaoImpl().selectCartBooksCount(cid);
+	}
+
+}

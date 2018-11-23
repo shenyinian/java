@@ -1,0 +1,65 @@
+package com.imin.web;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.imin.domain.Customer;
+import com.imin.domain.Shopping_cart;
+import com.imin.service.impl.CartServiceImpl;
+
+public class PayServlet extends HttpServlet {
+
+	private static final long serialVersionUID = 1L;
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		request.setCharacterEncoding("UTF-8");
+		String method = request.getParameter("method");
+		Integer count = 0;
+		if("toBuyAddress".equalsIgnoreCase(method)) {
+			Customer customer = (Customer) request.getSession().getAttribute("customer");
+			//Integer update = null;
+			if (customer != null) {
+				String[] idstrs = request.getParameterValues("id");
+				Integer id = null;
+				if(idstrs !=null) {
+					for(String idstr:idstrs) {
+						if (StringUtils.isNotBlank(idstr)) {
+							id = Integer.valueOf(idstr);
+							try {
+								new CartServiceImpl().selectCartBook(id);
+							} catch (SQLException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+				List<Shopping_cart> list;
+				try {
+					list = new CartServiceImpl().listCartBook(customer.getCid());
+					request.setAttribute("list", list);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				request.getRequestDispatcher("/buy_address.jsp").forward(request, response);
+			}
+		}
+	}
+
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		doGet(request, response);
+	}
+
+}

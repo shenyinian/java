@@ -1,0 +1,51 @@
+package com.imin.service.impl;
+
+import java.sql.SQLException;
+
+import com.imin.dao.impl.CustomerDaoImpl;
+import com.imin.domain.Customer;
+import com.imin.exception.UserException;
+import com.imin.service.ICustomerService;
+import com.imin.utils.MD5Util;
+
+public class CustomerServiceImpl implements ICustomerService {
+
+	public void regist(Customer customer) {
+		try {
+			new CustomerDaoImpl().insert(customer);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public Customer login(String username, String password) throws UserException {
+		//1.对用户传过来的密码进行加密
+		String md5 = MD5Util.md5(password);
+		try {
+			Customer customer = new CustomerDaoImpl().selectByNameAndPwd(username,md5);
+			if(customer == null){
+				throw new UserException("用户名或密码错误");
+			}
+			return customer;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new UserException("网站维护,请联系管理员");
+		}
+	}
+	
+	public Customer regist(String cusername, String qq,String phone,String email) throws UserException {
+		
+		try {
+			Customer customer = new CustomerDaoImpl().selectByNameAndQqAndPhoneAndEmail(cusername,qq,phone,email);
+			if(customer != null){
+				throw new UserException("用户已存在，请重新输入");
+			}
+			return customer;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new UserException("网站维护,请联系管理员");
+		}
+	}
+
+
+}

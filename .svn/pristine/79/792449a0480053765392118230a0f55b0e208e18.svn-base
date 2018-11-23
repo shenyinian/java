@@ -1,0 +1,60 @@
+package com.imin.web;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.websocket.Session;
+
+import com.imin.domain.Book;
+import com.imin.domain.Customer;
+import com.imin.domain.Shopping_cart;
+import com.imin.service.impl.CartServiceImpl;
+
+public class CartServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		request.setCharacterEncoding("UTF-8");
+		String method = request.getParameter("method");
+		Integer count = 0;
+		if ("cartBooksCount".equalsIgnoreCase(method)) {
+			// 得到当前客户的cid
+			Customer customer = (Customer) request.getSession().getAttribute("customer");
+			try {
+				if (customer != null) {
+					count = new CartServiceImpl().selectCartBooksCount(customer.getCid());
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			response.getWriter().print(count);
+		}else if("cartListBook".equalsIgnoreCase(method)) {
+			Customer customer = (Customer) request.getSession().getAttribute("customer");
+			try {
+				if (customer != null) {
+					/*System.out.println(customer.getCid());*/
+					List<Shopping_cart> list = new CartServiceImpl().listCartBook(customer.getCid());
+					request.setAttribute("list", list);
+					/*for(Shopping_cart s:list) {
+						System.out.println(s);
+					}*/
+					request.getRequestDispatcher("/cart.jsp").forward(request, response);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		doGet(request, response);
+	}
+
+}

@@ -1,0 +1,33 @@
+package com.imin.dao.impl;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
+import com.imin.dao.ICartDao;
+import com.imin.domain.Book;
+import com.imin.domain.Shopping_cart;
+import com.imin.utils.DButil;
+
+public class CartDaoImpl implements ICartDao{
+
+	//查询购物车数量
+	public Integer selectCartBooksCount(Integer cid) throws SQLException{
+		String sql = "SELECT SUM(buynum) FROM shopping_cart WHERE cid = ?";
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		//查询单行单列的数据用new ScalarHandler
+		Number count = (qr.query(sql, new ScalarHandler<Long>(),cid));
+		return  count.intValue();
+	}
+
+	//查询购物车内容
+	public List<Shopping_cart> listCartBook(Integer cid) throws SQLException {
+		String sql = "SELECT * FROM shopping_cart WHERE cid = ?";
+		QueryRunner qr = new QueryRunner(DButil.getDataSource());
+		List<Shopping_cart> list = qr.query(sql, new BeanListHandler<Shopping_cart>(Shopping_cart.class),cid);
+		return list;
+	}
+
+}

@@ -1,0 +1,136 @@
+package com.imin.web;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.websocket.Session;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.imin.domain.Customer;
+import com.imin.service.impl.CartServiceImpl;
+import com.imin.service.impl.CustomerServiceImpl;
+
+@SuppressWarnings("serial")
+public class VipServlet extends HttpServlet{
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// 解决post方式乱码
+		request.setCharacterEncoding("UTF-8");
+	String method =request.getParameter("method");
+	
+	response.setContentType("text/html;charset=utf-8");
+		//获参数
+	if ("updateCInfor".equalsIgnoreCase(method)) {
+	Map params = request.getParameterMap();
+	//得到昵称
+	String nickname = request.getParameter("nickname");
+	//客户姓名
+	String cname =request.getParameter("cname");
+	//得到邮箱
+	String email = request.getParameter("email");		
+	//得到电话号码
+	String phone = request.getParameter("phone");
+	//得到qq
+	String qq = request.getParameter("qq");
+	//得到省
+	String province = request.getParameter("province");
+	//得到市
+	String city = request.getParameter("city");
+	//得到县级市
+	String district = request.getParameter("district");
+	//得到学校
+	String school = request.getParameter("school");
+	//得到班级
+	String className = request.getParameter("className");
+	
+	Map<String, String> error = new HashMap<String, String>();
+	//昵称
+	if (StringUtils.isBlank(nickname)) {
+		error.put("nickname", "不能为空");}
+		//客户姓名
+	if (StringUtils.isBlank(cname)) {
+			error.put("cname", "不能为空");}	
+	//邮箱
+	if (StringUtils.isBlank(email)) {
+		error.put("email", "不能为空");
+	}else if(!email.matches("\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*")) {
+		error.put("email", "邮箱格式错误，请重新输入");
+			}
+	//电话
+	if (StringUtils.isBlank(phone)) {
+		error.put("phone", "不能为空");
+	}else if(!phone.matches("^1[34578]\\d{9}$")) {
+		error.put("phone", "电话号码格式错误，请重新输入");
+	}
+	//省份
+	if (StringUtils.equalsIgnoreCase(province, "省份")) {
+		error.put("province", "省份不能为空");
+	}
+	//地级市
+	if (StringUtils.equalsIgnoreCase(city, "地级市")) {
+		error.put("city", "地级市不能为空");
+	}
+	//市、县级市
+	if (StringUtils.equalsIgnoreCase(district, "市、县级市")) {
+		error.put("district", "市、县级市不能为空");
+	}
+	//qq
+	if (StringUtils.isBlank(qq)) {
+		error.put("qq", "不能为空");
+	}else if(!qq.matches("[1-9]\\d{4,10}")) {
+		error.put("qq", "QQ号码格式错误，请重新输入。。。。。。 ");
+	}
+	//校验格式
+	if (error.size() > 0) {
+		request.setAttribute("error", error);
+		request.getRequestDispatcher("/Everone.jsp").forward(request, response);
+		return;
+	}
+	
+	Customer customer = (Customer) request.getSession().getAttribute("customer");
+	try {
+		if (customer != null) {
+			try {
+				Integer updateCustomer = new CustomerServiceImpl().updateCustomer(nickname, cname, email, phone, qq, province, city, district, school, className, customer.getCid());
+			if(updateCustomer!=1) {
+				error.put("save", "修改失败，请检查后重新修改");
+			}
+			if(error.size()>0) {
+				request.setAttribute("error", error);
+				request.getRequestDispatcher("/updateinfo.jsp").forward(request, response);
+				return;
+			}
+			Customer c = new CustomerServiceImpl().selectByName(customer.getCusername());
+			HttpSession session = request.getSession();
+			session.setAttribute("customer", c);
+			response.sendRedirect(request.getContextPath()+"/info.jsp");
+			} catch (Exception e) {
+				String msg=e.getMessage();
+				request.setAttribute("errorMsg", msg);
+				request.getRequestDispatcher("/updateinfo.jsp").forward(request, response);
+			}
+			/*if(updateCustomer !=0) {
+				
+				
+			}*/
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+		}
+	
+	
+	
+}
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	doGet(request, response);
+}
+	
+	}

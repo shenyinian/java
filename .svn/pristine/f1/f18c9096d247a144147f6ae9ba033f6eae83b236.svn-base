@@ -1,0 +1,263 @@
+package com.imin.web;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.websocket.Session;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.imin.domain.Book;
+import com.imin.domain.Customer;
+import com.imin.domain.Order_details;
+import com.imin.domain.Shipping_address;
+import com.imin.service.impl.BoughtServiceImpl;
+import com.imin.service.impl.CartServiceImpl;
+import com.imin.service.impl.CreditServiceImpl;
+import com.imin.service.impl.CustomerServiceImpl;
+import com.imin.service.impl.Shipping_addressServiceImpl;
+
+@SuppressWarnings("serial")
+public class VipServlet extends HttpServlet{
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// 解决post方式乱码
+		request.setCharacterEncoding("UTF-8");
+	String method =request.getParameter("method");
+	
+	response.setContentType("text/html;charset=utf-8");
+		//获参数
+	if ("updateCInfor".equalsIgnoreCase(method)) {
+	Map params = request.getParameterMap();
+	//得到昵称
+	String nickname = request.getParameter("nickname");
+	//客户姓名
+	String cname =request.getParameter("cname");
+	//得到邮箱
+	String email = request.getParameter("email");		
+	//得到电话号码
+	String phone = request.getParameter("phone");
+	//得到qq
+	String qq = request.getParameter("qq");
+	//得到省
+	String province = request.getParameter("province");
+	//得到市
+	String city = request.getParameter("city");
+	//得到县级市
+	String district = request.getParameter("district");
+	//得到学校
+	String school = request.getParameter("school");
+	//得到班级
+	String className = request.getParameter("className");
+	
+	Map<String, String> error = new HashMap<String, String>();
+	//昵称
+	if (StringUtils.isBlank(nickname)) {
+		error.put("nickname", "不能为空");}
+		//客户姓名
+	if (StringUtils.isBlank(cname)) {
+			error.put("cname", "不能为空");}	
+	//邮箱
+	if (StringUtils.isBlank(email)) {
+		error.put("email", "不能为空");
+	}else if(!email.matches("\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*")) {
+		error.put("email", "邮箱格式错误，请重新输入");
+			}
+	//电话
+	if (StringUtils.isBlank(phone)) {
+		error.put("phone", "不能为空");
+	}else if(!phone.matches("^1[34578]\\d{9}$")) {
+		error.put("phone", "电话号码格式错误，请重新输入");
+	}
+	//省份
+	if (StringUtils.equalsIgnoreCase(province, "省份")) {
+		error.put("province", "省份不能为空");
+	}
+	//地级市
+	if (StringUtils.equalsIgnoreCase(city, "地级市")) {
+		error.put("city", "地级市不能为空");
+	}
+	//市、县级市
+	if (StringUtils.equalsIgnoreCase(district, "市、县级市")) {
+		error.put("district", "市、县级市不能为空");
+	}
+	//qq
+	if (StringUtils.isBlank(qq)) {
+		error.put("qq", "不能为空");
+	}else if(!qq.matches("[1-9]\\d{4,10}")) {
+		error.put("qq", "QQ号码格式错误，请重新输入。。。。。。 ");
+	}
+	//校验格式
+	if (error.size() > 0) {
+		request.setAttribute("error", error);
+		request.getRequestDispatcher("/Everone.jsp").forward(request, response);
+		return;
+	}
+	
+	Customer customer = (Customer) request.getSession().getAttribute("customer");
+	try {
+		if (customer != null) {
+			try {
+				Integer updateCustomer = new CustomerServiceImpl().updateCustomer(nickname, cname, email, phone, qq, province, city, district, school, className, customer.getCid());
+			if(updateCustomer!=1) {
+				error.put("save", "修改失败，请检查后重新修改");
+			}
+			if(error.size()>0) {
+				request.setAttribute("error", error);
+				request.getRequestDispatcher("/updateinfo.jsp").forward(request, response);
+				return;
+			}
+			Customer c = new CustomerServiceImpl().selectByName(customer.getCusername());
+			HttpSession session = request.getSession();
+			session.setAttribute("customer", c);
+			response.sendRedirect(request.getContextPath()+"/info.jsp");
+			} catch (Exception e) {
+				String msg=e.getMessage();
+				request.setAttribute("errorMsg", msg);
+				request.getRequestDispatcher("/updateinfo.jsp").forward(request, response);
+			}
+			/*if(updateCustomer !=0) {
+				
+				
+			}*/
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+		}
+	//验证积分
+	else if ("listMyCredit".equalsIgnoreCase(method)) {
+		
+		Customer customer = (Customer) request.getSession().getAttribute("customer");
+		int sum=0;
+		if (customer != null) {
+			try {
+				List<Book> list = new CreditServiceImpl().selectMycredit(customer.getCid());
+				for(Book b : list) {
+					sum=sum+b.getCredit();
+				}
+				request.setAttribute("list", list);
+				request.setAttribute("sum", sum);
+				request.getRequestDispatcher("/user_8.jsp").forward(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	else if ("listBought".equalsIgnoreCase(method)) {
+		
+		Customer customer = (Customer) request.getSession().getAttribute("customer");
+		int sum=0;
+		double total=0;
+		if (customer != null) {
+			try {
+				List<Book> list = new BoughtServiceImpl().selectBought(customer.getCid());
+				List<Order_details> list1 = new BoughtServiceImpl().selectBought1(customer.getCid());
+				for(Order_details o : list1) {
+					sum=sum+o.getBcount();
+				}
+				for(Book b : list) {
+					total=sum*b.getDiscountprice();
+				}
+				request.setAttribute("list", list);
+				request.setAttribute("sum", sum);
+				request.setAttribute("total", total);
+				request.getRequestDispatcher("/user_5.jsp").forward(request, response);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}else if("address".equalsIgnoreCase(method)){
+		Customer customer = (Customer) request.getSession().getAttribute("customer");
+		//得到详细地址
+		String addr_detail= request.getParameter("addr_detail");
+		//得到详细地址
+		String postCode= request.getParameter("postCode");
+
+		//得到收货人姓名
+		String name= request.getParameter("name");
+		//得到手机
+		String mobile= request.getParameter("mobile");
+		//得到省
+		String province = request.getParameter("province");
+		//得到市
+		String city = request.getParameter("city");
+		//得到县级市
+		String district = request.getParameter("country");
+		//得到默认地址
+		String defautAddrstr = request.getParameter("defautAddr");
+		Integer defautAddr = 0;
+		if(StringUtils.isNotBlank(defautAddrstr)) {
+			defautAddr = Integer.valueOf(defautAddrstr);
+		}
+		Map<String, String> error = new HashMap<String, String>();
+		if (StringUtils.isBlank(addr_detail)) {
+			error.put("addr_detail", "详细地址不能为空");
+		}
+		if (StringUtils.isBlank(postCode)) {
+			error.put("postCode", "邮编不能为空");
+		}
+		if (StringUtils.isBlank(mobile)) {
+			error.put("mobile", "手机号码不能为空");
+		}
+		if (StringUtils.isBlank(name)) {
+			error.put("name", "收货人姓名不能为空");
+		}
+		//省份
+		if (StringUtils.equalsIgnoreCase(province, "省份")) {
+			error.put("province", "省份不能为空");
+		}
+		//地级市
+		if (StringUtils.equalsIgnoreCase(city, "地级市")) {
+			error.put("city", "地级市不能为空");
+		}
+		//市、县级市
+		if (StringUtils.equalsIgnoreCase(district, "市、县级市")) {
+			error.put("district", "市、县级市不能为空");
+		}
+		//必填格式如果有空或者格式不对的
+		if (error.size() > 0) {
+			request.setAttribute("error", error);
+			request.getRequestDispatcher("/address.jsp").forward(request, response);
+			return;
+		}
+		
+	// 封装参数到shipping_address对象
+		Shipping_address shipping_address=new Shipping_address();
+		shipping_address.setCid(customer.getCid());
+		shipping_address.setAddr_detail(addr_detail);
+		shipping_address.setPostCode(postCode);
+		shipping_address.setName(name);
+		shipping_address.setMobile(mobile);
+		shipping_address.setProvince(province);
+		shipping_address.setCity(city);
+		shipping_address.setCounty(district);
+		shipping_address.setDefaultAddr(defautAddr);
+		// 填写完成后重定向到本页面
+		new Shipping_addressServiceImpl().Shipping_address(shipping_address);
+		try {
+			List<Shipping_address> list = new Shipping_addressServiceImpl().findadd(customer.getCid());
+			request.setAttribute("list", list);
+			request.getRequestDispatcher("/address.jsp").forward(request, response);
+			//response.sendRedirect(request.getContextPath()+"/address.jsp");
+		} catch (Exception e) {
+		}
+		
+	}
+	
+}
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	doGet(request, response);
+}
+	
+	}
